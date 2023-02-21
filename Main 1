@@ -1,0 +1,120 @@
+// Set up the game grid
+const gridSize = 50;
+const grid = new Array(gridSize).fill(null).map(() => new Array(gridSize).fill(null));
+
+// Define the Individual class
+class Individual {
+  constructor(x, y, age, gender, geneticCode) {
+    this.x = x;
+    this.y = y;
+    this.age = age;
+    this.gender = gender;
+    this.geneticCode = geneticCode;
+  }
+}
+
+// Define the Family class
+class Family {
+  constructor(patriarch, matriarch, children) {
+    this.patriarch = patriarch;
+    this.matriarch = matriarch;
+    this.children = children;
+  }
+}
+
+// Generate a random genetic code for a new individual
+function generateGeneticCode() {
+  const geneticCode = [];
+  for (let i = 0; i < 8; i++) {
+    geneticCode.push(Math.round(Math.random()));
+  }
+  return geneticCode;
+}
+
+// Simulate the passage of time in the game
+function tick() {
+  const newIndividuals = [];
+
+  // Update age of each individual
+  for (let x = 0; x < gridSize; x++) {
+    for (let y = 0; y < gridSize; y++) {
+      if (grid[x][y] !== null) {
+        grid[x][y].age++;
+      }
+    }
+  }
+
+  // Handle reproduction
+  for (let x = 0; x < gridSize; x++) {
+    for (let y = 0; y < gridSize; y++) {
+      const individual = grid[x][y];
+      if (individual !== null && individual.age >= 18) {
+        // Check adjacent squares for potential mates
+        const potentialMates = [];
+        if (x > 0 && grid[x - 1][y] !== null && grid[x - 1][y].gender === 'male') {
+          potentialMates.push(grid[x - 1][y]);
+        }
+        if (x < gridSize - 1 && grid[x + 1][y] !== null && grid[x + 1][y].gender === 'male') {
+          potentialMates.push(grid[x + 1][y]);
+        }
+        if (y > 0 && grid[x][y - 1] !== null && grid[x][y - 1].gender === 'female') {
+          potentialMates.push(grid[x][y - 1]);
+        }
+        if (y < gridSize - 1 && grid[x][y + 1] !== null && grid[x][y + 1].gender === 'female') {
+          potentialMates.push(grid[x][y + 1]);
+        }
+
+        // If there are potential mates, select one at random and reproduce
+        if (potentialMates.length > 0) {
+          const mate = potentialMates[Math.floor(Math.random() * potentialMates.length)];
+          const childGeneticCode = [];
+          for (let i = 0; i < 8; i++) {
+            if (Math.random() < 0.5) {
+              childGeneticCode.push(individual.geneticCode[i]);
+            } else {
+              childGeneticCode.push(mate.geneticCode[i]);
+            }
+          }
+          newIndividuals.push(new Individual(x, y, 0, Math.random() < 0.5 ? 'male' : 'female', childGeneticCode));
+        }
+      }
+    }
+  }
+
+  // Add new individuals to the grid
+  for (const individual of newIndividuals) {
+  grid[individual.x][individual.y] = individual;
+  
+  // Render the game grid as a table in HTML
+function renderGrid() {
+let html = '';
+for (let y = 0; y < gridSize; y++) {
+html += '<tr>';
+for (let x = 0; x < gridSize; x++) {
+const individual = grid[x][y];
+if (individual !== null) {
+const color = individual.gender === 'male' ? 'blue' : 'pink';
+const ageColor = rgb(${255 - Math.min(individual.age * 10, 255)}, 0, 0);
+const geneticCode = individual.geneticCode.join('');
+html += <td style="background-color: ${color}; color: ${ageColor}">${geneticCode}</td>;
+} else {
+html += '<td></td>';
+}
+}
+html += '</tr>';
+}
+document.getElementById('grid').innerHTML = html;
+}
+
+// Initialize the game with a few individuals
+grid[25][25] = new Individual(25, 25, 0, 'male', generateGeneticCode());
+grid[24][25] = new Individual(24, 25, 0, 'female', generateGeneticCode());
+grid[26][25] = new Individual(26, 25, 0, 'female', generateGeneticCode());
+grid[25][24] = new Individual(25, 24, 0, 'male', generateGeneticCode());
+grid[25][26] = new Individual(25, 26, 0, 'male', generateGeneticCode());
+
+// Start the game loop
+setInterval(() => {
+tick();
+renderGrid();
+}, 1000);
